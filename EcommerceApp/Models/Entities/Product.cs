@@ -17,6 +17,11 @@ namespace EcommerceApp.Models.Entities
 
         public int Stock {  get; set; }
 
+        public int CategoryId { get; set; }
+
+        // Navigation Property
+        public Category? Category { get; set; }
+
         public DateTime CreatedDate { get; set; } = DateTime.Now;
     }
 }
