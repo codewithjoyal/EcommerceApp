@@ -1,0 +1,14 @@
+﻿@model IEnumerable<EcommerceApp.Models.Entities.Category>
+<div class="container mt-4">
+
+    <h2>Category List</h2>
+
+</div>
+@if (!Model.Any())
+{
+    <p>No categories found.</p>
+}
+else
+{
+    <p>Categories loaded successfully.</p>
+}

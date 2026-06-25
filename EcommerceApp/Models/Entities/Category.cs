@@ -12,5 +12,7 @@ namespace EcommerceApp.Models.Entities
         // Navigation Property
         public ICollection<Product> Products { get; set; } = new List<Product>();
 
+        [Range(1, 100)]
+        public int DisplayOrder { get; set; }
     }
 }
