@@ -1,4 +1,8 @@
 ﻿@model IEnumerable<EcommerceApp.Models.Entities.Category>
+@if (TempData["Success"] != null)
+{
+    <p>@TempData["Success"]</p>
+}
 <div class="container mt-4">
     <h2>Category List</h2>
 </div>
@@ -25,7 +29,7 @@
                     <td>@category.Id</td>
                     <td>@category.Name</td>
                     <td>@category.DisplayOrder</td>
-                    <td><button>Edit</button></td>
+                    <td><a asp-action="Edit" asp-route-id="@category.Id">Edit</a></td>
                 </tr>
             }
         </tbody>

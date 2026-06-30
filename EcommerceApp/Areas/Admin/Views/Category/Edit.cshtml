@@ -1,0 +1,14 @@
+﻿@model Category
+
+<h1>Edit Category</h1>
+
+<form method="post">
+    <input asp-for="Id" hidden />
+    <label>Category Name</label>
+    <input asp-for="Name" />
+    <br /><br />
+    <label>Display order</label>
+    <input asp-for="DisplayOrder" />
+    <br /><br />
+    <button type="submit">Update</button>
+</form>
