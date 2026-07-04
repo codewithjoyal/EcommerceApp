@@ -3,6 +3,7 @@
 <h1>Edit Category</h1>
 
 <form method="post">
+    @Html.AntiForgeryToken()
     <input asp-for="Id" hidden />
     <label>Category Name</label>
     <input asp-for="Name" />

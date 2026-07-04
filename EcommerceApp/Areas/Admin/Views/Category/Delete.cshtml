@@ -1,0 +1,14 @@
+﻿@model Category
+<h1>Delete Category</h1>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" hidden />
+    <p>
+        Are you sure you want to delete the category
+        <strong>@Model.Name</strong>?
+    </p>
+    <br /><br />
+    <button type="submit">Yes, Delete</button>
+    <a asp-action="Index">Cancel</a>
+</form>

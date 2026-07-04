@@ -1,6 +1,7 @@
 ﻿using EcommerceApp.Data;
 using EcommerceApp.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceApp.Areas.Admin.Controllers
 {
@@ -22,25 +23,17 @@ namespace EcommerceApp.Areas.Admin.Controllers
             return View();
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Create(Category category)
         {
             if (!ModelState.IsValid)
             {
-                foreach (var item in ModelState)
-                {
-                    foreach (var error in item.Value.Errors)
-                    {
-                        Console.WriteLine($"{item.Key} : {error.ErrorMessage}");
-                    }
-                }
+                return View(category);
             }
-            if (ModelState.IsValid){
-                _context.Categories.Add(category);
-                _context.SaveChanges();
-                TempData["Success"] = "Category created succesfully.";
-                return RedirectToAction(nameof(Index));
-            }
-            return View(category);
+            _context.Categories.Add(category);
+            _context.SaveChanges();
+            TempData["Success"] = "Category created successfully.";
+            return RedirectToAction(nameof(Index));
         }
         [HttpGet]
         public IActionResult Edit(int id) 
@@ -58,22 +51,38 @@ namespace EcommerceApp.Areas.Admin.Controllers
         public IActionResult Edit(Category category) {
             if (!ModelState.IsValid)
             {
-                foreach (var item in ModelState)
-                {
-                    foreach (var error in item.Value.Errors)
-                    {
-                        Console.WriteLine($"{item.Key} : {error.ErrorMessage}");
-                    }
-                }
+                return View(category);
             }
-            if (ModelState.IsValid)
+            _context.Categories.Update(category);
+            _context.SaveChanges();
+            TempData["Success"] = "Category updated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public IActionResult Delete(int id)
+        {
+            var category = _context.Categories.Find(id);
+            if (category == null)
             {
-                _context.Categories.Update(category);
-                _context.SaveChanges();
-                TempData["Success"] = "Category updated succesfully.";
-                return RedirectToAction(nameof(Index));
+                return NotFound();
             }
             return View(category);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [ActionName("Delete")]
+        public IActionResult DeletePost(int id)
+        {
+            var categoryFromDb = _context.Categories.Find(id);
+            if (categoryFromDb == null)
+            {
+                return NotFound();
+            }
+            _context.Categories.Remove(categoryFromDb);
+            _context.SaveChanges();
+            TempData["Success"] = "Category deleted successfully.";
+            return RedirectToAction(nameof(Index));
         }
     }
 }
