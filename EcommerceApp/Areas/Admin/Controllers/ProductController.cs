@@ -19,7 +19,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
             var products = _context.Products
                 .Include(p => p.Category)
                 .ToList();
-            return View();
+            return View(products);
         }
         public IActionResult Create()
         {
