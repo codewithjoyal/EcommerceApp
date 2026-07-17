@@ -1,0 +1,14 @@
+﻿@model Product
+<h1>Delete Product</h1>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Id" hidden />
+    <p>
+        Are you sure you want to delete the product
+        <strong>@Model.Name</strong>?
+    </p>
+    <br /><br />
+    <button type="submit">Yes, Delete</button>
+    <a asp-action="Index">Cancel</a>
+</form>

@@ -74,14 +74,27 @@ namespace EcommerceApp.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Delete(int id)
         {
-            return View();
+            var product = _context.Products.Find(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            return View(product);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Delete")]
         public IActionResult DeletePost(int id)
         {
-            return View();
+            var productFromDb = _context.Products.Find(id);
+            if (productFromDb == null)
+            {
+                return NotFound();
+            }
+            _context.Products.Remove(productFromDb);
+            _context.SaveChanges();
+            TempData["Success"] = "Product deleted successfully.";
+            return RedirectToAction(nameof(Index));
         }
         private void LoadCategories()
         {
