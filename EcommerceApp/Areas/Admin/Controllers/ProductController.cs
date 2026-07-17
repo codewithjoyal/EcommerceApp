@@ -45,13 +45,31 @@ namespace EcommerceApp.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            return View();
+            var product = _context.Products.Find(id);
+            if (product == null)
+            {
+                return NotFound();
+            }
+            LoadCategories();
+            return View(product);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Product product)
+        public IActionResult Edit(int id,Product product)
         {
-            return View();
+            if (id != product.Id)
+            {
+                return BadRequest();
+            }
+            if (!ModelState.IsValid)
+            {
+                LoadCategories();
+                return View(product);
+            }
+            _context.Products.Update(product);
+            _context.SaveChanges();
+            TempData["Success"] = "Product updated succesfully";
+            return RedirectToAction(nameof(Index));
         }
         [HttpGet]
         public IActionResult Delete(int id)

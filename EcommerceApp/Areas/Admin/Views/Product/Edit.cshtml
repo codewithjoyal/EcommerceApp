@@ -1,0 +1,45 @@
+﻿@model Product
+
+<h1>Edit Product</h1>
+
+<form method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input asp-for="Id" type="hidden" />
+
+    <label>Product Name</label>
+    <input asp-for="Name" />
+    <span asp-validation-for="Name"></span>
+    <br /><br />
+
+    <label>Description</label>
+    <input asp-for="Description" />
+    <span asp-validation-for="Description"></span>
+    <br /><br />
+
+    <label>Price</label>
+    <input asp-for="Price" />
+    <span asp-validation-for="Price"></span>
+    <br /><br />
+
+    <label>Stock</label>
+    <input asp-for="Stock" />
+    <span asp-validation-for="Stock"></span>
+    <br /><br />
+
+    <label>Category</label>
+    <select asp-for="CategoryId" asp-items="ViewBag.Categories">
+        <option value="">-- Select Category --</option>
+    </select>
+    <span asp-validation-for="CategoryId"></span>
+
+    <br /><br />
+
+    <button type="submit">Save</button>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
