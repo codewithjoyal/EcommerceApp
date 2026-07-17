@@ -1,0 +1,24 @@
+﻿@model EcommerceApp.Models.Entities.Product
+<h1>Create Product</h1>
+
+<form method="post">
+    <label>Product Name</label>
+    <input asp-for="Name" />
+    <span asp-validation-for="Name"></span>
+    <br /><br />
+    <label>Description</label>
+    <input asp-for="Description" />
+    <br /><br />
+    <label>Price</label>
+    <input asp-for="Price" />
+    <br /><br />
+    <label>Stock</label>
+    <input asp-for="Stock" />
+    <br /><br />
+    <label>Category</label>
+    <select asp-for="CategoryId" asp-items="ViewBag.Categories">
+        <option value="">-- Select Category --</option>
+    </select>
+    <br /><br />
+    <button type="submit">Save</button>
+</form>

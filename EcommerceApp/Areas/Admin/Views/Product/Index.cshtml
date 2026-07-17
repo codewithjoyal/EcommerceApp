@@ -1,9 +1,16 @@
 ﻿@model IEnumerable<Product>
-
+@if (TempData["Success"] != null)
+{
+    <p>@TempData["Success"]</p>
+}
 <div class="container mt-4">
     <h2>Product List</h2>
 </div>
-
+<a asp-area="Admin"
+   asp-controller="Product"
+   asp-action="Create">
+    Create Product
+</a>
 @if(Model.Any())
 {
     <table>

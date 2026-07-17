@@ -1,6 +1,7 @@
 ﻿using EcommerceApp.Data;
 using EcommerceApp.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceApp.Areas.Admin.Controllers
@@ -23,13 +24,23 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
         public IActionResult Create()
         {
+            LoadCategories();
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Create(Product product)
         {
-            return View();
+            if (!ModelState.IsValid)
+            {
+                LoadCategories();
+                return View(product);
+            }
+            _context.Products.Add(product);
+            _context.SaveChanges();
+            TempData["Success"] = "Product created Successfully";
+
+            return RedirectToAction(nameof(Index));
         }
         [HttpGet]
         public IActionResult Edit(int id)
@@ -53,6 +64,11 @@ namespace EcommerceApp.Areas.Admin.Controllers
         public IActionResult DeletePost(int id)
         {
             return View();
+        }
+        private void LoadCategories()
+        {
+            var categories = _context.Categories.ToList();
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
         }
     }
 }
