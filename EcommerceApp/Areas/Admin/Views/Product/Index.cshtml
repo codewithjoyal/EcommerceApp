@@ -22,7 +22,8 @@
                 <th>Price</th>
                 <th>Stock</th>
                 <th>Category</th>
-                <th>Created Date</th>
+                <th>Image</th>
+                <th>Created Date</th>              
                 <th>Action</th>
             </tr>
         </thead>
@@ -35,6 +36,20 @@
                     <td>@product.Price.ToString("C")</td>
                     <td>@product.Stock</td>
                     <td>@product.Category?.Name</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                        {
+                            <img src="~/images/products/@product.ImageUrl"
+                                 alt="@product.Name"
+                                 width="80"
+                                 height="80"
+                                 style="object-fit:cover; border-radius:6px;" />
+                        }
+                        else
+                        {
+                            <span>No Image</span>
+                        }
+                    </td>
                     <td>@product.CreatedDate.ToString("dd-MM-yyyy")</td>
                     <td><a asp-action="Edit" asp-route-id="@product.Id">Edit</a>|<a asp-action="Delete" asp-route-id="@product.Id">Delete</a></td>
                 </tr>
