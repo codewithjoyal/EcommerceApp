@@ -1,7 +1,7 @@
 ﻿@model EcommerceApp.Models.Entities.Product
 <h1>Create Product</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     <label>Product Name</label>
     <input asp-for="Name" />
     <span asp-validation-for="Name"></span>
@@ -20,5 +20,7 @@
         <option value="">-- Select Category --</option>
     </select>
     <br /><br />
+    <label>Product Image</label>
+    <input type="file" name="image" accept=".jpg,.png,.jpeg,.webp"/>
     <button type="submit">Save</button>
 </form>

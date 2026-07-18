@@ -10,10 +10,12 @@ namespace EcommerceApp.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(ApplicationDbContext context)
+        public ProductController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
         public IActionResult Index()
         {
@@ -29,12 +31,36 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Product product)
+        public IActionResult Create(Product product,IFormFile? image)
         {
             if (!ModelState.IsValid)
             {
                 LoadCategories();
                 return View(product);
+            }
+            if (image != null)
+            {
+                if (image.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("image", "Maximum file size is 5 MB.");
+                    LoadCategories();
+                    return View(product);
+                }
+                var extension = Path.GetExtension(image.FileName);
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                if (!allowedExtensions.Contains(extension.ToLower()))
+                {
+                    ModelState.AddModelError("image", "Only image files are allowed.");
+                    LoadCategories();
+                    return View(product);
+                }
+                var filename = Guid.NewGuid().ToString();             
+                var filepath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products", filename + extension);
+                using (var fileStream = new FileStream(filepath, FileMode.Create))
+                {
+                    image.CopyTo(fileStream);
+                }
+                product.ImageUrl = filename + extension;
             }
             _context.Products.Add(product);
             _context.SaveChanges();

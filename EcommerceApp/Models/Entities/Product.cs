@@ -23,5 +23,7 @@ namespace EcommerceApp.Models.Entities
         public Category? Category { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        public string? ImageUrl { get; set; }
     }
 }
