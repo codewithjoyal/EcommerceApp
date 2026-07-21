@@ -81,7 +81,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id,Product product)
+        public IActionResult Edit(int id,Product product,IFormFile? image)
         {
             if (id != product.Id)
             {
@@ -92,7 +92,54 @@ namespace EcommerceApp.Areas.Admin.Controllers
                 LoadCategories();
                 return View(product);
             }
-            _context.Products.Update(product);
+            var productFromDb = _context.Products.Find(id);
+            if (productFromDb == null)
+            {
+                return NotFound();
+            }
+            if (image != null)
+            {                
+                if (image.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("image", "Maximum file size is 5 MB.");
+                    LoadCategories();
+                    return View(product);
+                }             
+                var extension = Path.GetExtension(image.FileName);
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                if (!allowedExtensions.Contains(extension.ToLower()))
+                {
+                    ModelState.AddModelError("image", "Only image files are allowed.");
+                    LoadCategories();
+                    return View(product);
+                }
+                var filename = Guid.NewGuid().ToString();
+                var filepath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products", filename + extension);
+                using (var fileStream = new FileStream(filepath, FileMode.Create))
+                {
+                    image.CopyTo(fileStream);
+                }
+                if (!string.IsNullOrEmpty(productFromDb.ImageUrl))
+                {
+                    var oldImagePath = Path.Combine(
+                        _webHostEnvironment.WebRootPath,
+                        "images",
+                        "products",
+                        productFromDb.ImageUrl);
+
+                    if (System.IO.File.Exists(oldImagePath))
+                    {
+                        System.IO.File.Delete(oldImagePath);
+                    }
+                }
+                productFromDb.ImageUrl = filename + extension;
+            }
+
+            productFromDb.Name = product.Name;
+            productFromDb.Description = product.Description;
+            productFromDb.Price = product.Price;
+            productFromDb.Stock = product.Stock;
+            productFromDb.CategoryId = product.CategoryId;
             _context.SaveChanges();
             TempData["Success"] = "Product updated succesfully";
             return RedirectToAction(nameof(Index));

@@ -2,7 +2,7 @@
 
 <h1>Edit Product</h1>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 
     @Html.AntiForgeryToken()
 
@@ -35,7 +35,9 @@
     <span asp-validation-for="CategoryId"></span>
 
     <br /><br />
-
+    <label>Product Image</label>
+    <input type="file" name="image" accept=".jpg,.png,.jpeg,.webp" />
+    <br /><br />
     <button type="submit">Save</button>
 
 </form>
