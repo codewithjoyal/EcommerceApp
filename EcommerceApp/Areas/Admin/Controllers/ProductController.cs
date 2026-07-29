@@ -1,17 +1,20 @@
 ﻿using EcommerceApp.Data;
 using EcommerceApp.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 
 namespace EcommerceApp.Areas.Admin.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Area("Admin")]   
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private const int MaxImageSize = 5 * 1024 * 1024;
+        private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
 
         public ProductController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
@@ -24,8 +27,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
                 .Include(p => p.Category)
                 .ToList();
             return View(products);
-        }
-        [Authorize(Roles = "Admin")]
+        }      
         public IActionResult Create()
         {
             LoadCategories();
@@ -33,7 +35,6 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public IActionResult Create(Product product,IFormFile? image)
         {
             if (!ModelState.IsValid)
@@ -43,27 +44,12 @@ namespace EcommerceApp.Areas.Admin.Controllers
             }
             if (image != null)
             {
-                if (image.Length > 5 * 1024 * 1024)
+                if (!IsImageValid(image))
                 {
-                    ModelState.AddModelError("image", "Maximum file size is 5 MB.");
                     LoadCategories();
                     return View(product);
                 }
-                var extension = Path.GetExtension(image.FileName);
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-                if (!allowedExtensions.Contains(extension.ToLower()))
-                {
-                    ModelState.AddModelError("image", "Only image files are allowed.");
-                    LoadCategories();
-                    return View(product);
-                }
-                var filename = Guid.NewGuid().ToString();             
-                var filepath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products", filename + extension);
-                using (var fileStream = new FileStream(filepath, FileMode.Create))
-                {
-                    image.CopyTo(fileStream);
-                }
-                product.ImageUrl = filename + extension;
+                product.ImageUrl = UploadImage(image);
             }
             _context.Products.Add(product);
             _context.SaveChanges();
@@ -72,7 +58,6 @@ namespace EcommerceApp.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
-        [Authorize(Roles = "Admin")]
         public IActionResult Edit(int id)
         {
             var product = _context.Products.Find(id);
@@ -85,7 +70,6 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
         public IActionResult Edit(int id,Product product,IFormFile? image)
         {
             if (id != product.Id)
@@ -103,41 +87,14 @@ namespace EcommerceApp.Areas.Admin.Controllers
                 return NotFound();
             }
             if (image != null)
-            {                
-                if (image.Length > 5 * 1024 * 1024)
+            {
+                if (!IsImageValid(image))
                 {
-                    ModelState.AddModelError("image", "Maximum file size is 5 MB.");
-                    LoadCategories();
-                    return View(product);
-                }             
-                var extension = Path.GetExtension(image.FileName);
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-                if (!allowedExtensions.Contains(extension.ToLower()))
-                {
-                    ModelState.AddModelError("image", "Only image files are allowed.");
                     LoadCategories();
                     return View(product);
                 }
-                var filename = Guid.NewGuid().ToString();
-                var filepath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products", filename + extension);
-                using (var fileStream = new FileStream(filepath, FileMode.Create))
-                {
-                    image.CopyTo(fileStream);
-                }
-                if (!string.IsNullOrEmpty(productFromDb.ImageUrl))
-                {
-                    var oldImagePath = Path.Combine(
-                        _webHostEnvironment.WebRootPath,
-                        "images",
-                        "products",
-                        productFromDb.ImageUrl);
-
-                    if (System.IO.File.Exists(oldImagePath))
-                    {
-                        System.IO.File.Delete(oldImagePath);
-                    }
-                }
-                productFromDb.ImageUrl = filename + extension;
+                DeleteImage(productFromDb.ImageUrl);
+                productFromDb.ImageUrl = UploadImage(image);
             }
 
             productFromDb.Name = product.Name;
@@ -150,7 +107,6 @@ namespace EcommerceApp.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
-        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var product = _context.Products.Find(id);
@@ -163,7 +119,6 @@ namespace EcommerceApp.Areas.Admin.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Delete")]
-        [Authorize(Roles = "Admin")]
         public IActionResult DeletePost(int id)
         {
             var productFromDb = _context.Products.Find(id);
@@ -171,6 +126,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
             {
                 return NotFound();
             }
+            DeleteImage(productFromDb.ImageUrl);
             _context.Products.Remove(productFromDb);
             _context.SaveChanges();
             TempData["Success"] = "Product deleted successfully.";
@@ -180,6 +136,55 @@ namespace EcommerceApp.Areas.Admin.Controllers
         {
             var categories = _context.Categories.ToList();
             ViewBag.Categories = new SelectList(categories, "Id", "Name");
+        }
+        private void DeleteImage(string? imageName)
+        {
+            if (string.IsNullOrEmpty(imageName))
+                return;
+            var oldImagePath = Path.Combine(
+                _webHostEnvironment.WebRootPath,
+                "images",
+                "products",
+                imageName);
+            if (System.IO.File.Exists(oldImagePath))
+            {
+                System.IO.File.Delete(oldImagePath);
+            }
+            
+        }
+        private bool IsImageSizeValid(IFormFile image) 
+        {
+            if(image.Length > MaxImageSize)
+            {
+                ModelState.AddModelError("image", "Maximum file size is 5 MB.");
+                return false;
+            }
+            return true;
+        }
+        private bool IsImageExtensionValid(string extension)
+        {                       
+            if (!AllowedExtensions.Contains(extension))
+            {
+                ModelState.AddModelError("image", "Only image files are allowed.");
+                return false;
+            }
+            return true;
+        }
+        private bool IsImageValid(IFormFile image)
+        {
+            var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+            return IsImageSizeValid(image) && IsImageExtensionValid(extension);
+        }
+        private string UploadImage(IFormFile image)
+        {
+            var extension = Path.GetExtension(image.FileName).ToLowerInvariant();
+            var filename = Guid.NewGuid().ToString() + extension;
+            var filepath = Path.Combine(_webHostEnvironment.WebRootPath, "images", "products", filename);
+            using (var stream = new FileStream(filepath, FileMode.Create))
+            {
+                image.CopyTo(stream);
+            }
+            return filename;
         }
     }
 }
