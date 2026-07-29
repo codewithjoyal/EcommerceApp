@@ -3,10 +3,11 @@ using EcommerceApp.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EcommerceApp.Areas.Admin.Controllers
 {
-    [Area("Admin")]
+    [Area("Admin")]   
     public class ProductController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -24,6 +25,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
                 .ToList();
             return View(products);
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             LoadCategories();
@@ -31,6 +33,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create(Product product,IFormFile? image)
         {
             if (!ModelState.IsValid)
@@ -69,6 +72,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(int id)
         {
             var product = _context.Products.Find(id);
@@ -81,6 +85,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(int id,Product product,IFormFile? image)
         {
             if (id != product.Id)
@@ -145,6 +150,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var product = _context.Products.Find(id);
@@ -157,6 +163,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeletePost(int id)
         {
             var productFromDb = _context.Products.Find(id);

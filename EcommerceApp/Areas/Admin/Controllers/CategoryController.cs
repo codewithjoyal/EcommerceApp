@@ -1,5 +1,6 @@
 ﻿using EcommerceApp.Data;
 using EcommerceApp.Models.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,12 +19,14 @@ namespace EcommerceApp.Areas.Admin.Controllers
             var categories = _context.Categories.ToList();
             return View(categories);
         }
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create(Category category)
         {
             if (!ModelState.IsValid)
@@ -36,6 +39,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(int id) 
         {
             var category = _context.Categories.Find(id);
@@ -48,6 +52,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(Category category) {
             if (!ModelState.IsValid)
             {
@@ -60,6 +65,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(int id)
         {
             var category = _context.Categories.Find(id);
@@ -72,6 +78,7 @@ namespace EcommerceApp.Areas.Admin.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [ActionName("Delete")]
+        [Authorize(Roles = "Admin")]
         public IActionResult DeletePost(int id)
         {
             var categoryFromDb = _context.Categories.Find(id);
