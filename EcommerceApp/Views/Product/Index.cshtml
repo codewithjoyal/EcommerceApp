@@ -27,7 +27,18 @@
 
                 <li style="margin-top:15px;">
                     <a asp-action="Details" asp-route-id="@product.Id" style="margin-right:15px;">View Details</a>
-                    <a href="#">Add to Cart</a>
+                    <form asp-action="AddToCart"
+                          asp-route-productId="@product.Id"
+                          method="post"
+                          style="display:inline;">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit">
+                            Add to Cart
+                        </button>
+
+                    </form>
                 </li>
             </ul>
 
